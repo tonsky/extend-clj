@@ -1,0 +1,9 @@
+{:source-paths ["src" "test"]
+ :dependencies []
+ ; :deps {:aliases [:test :cljs]}
+ :builds
+ {:app
+  {:target           :node-script
+   :main             extend-clj.core-test/test-cljs
+   :output-to        "target/test.js"
+   :compiler-options {:infer-externs true}}}}

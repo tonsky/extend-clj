@@ -1,0 +1,10 @@
+{:jvm-opts ["-Duser.language=en" "-Duser.country=US" "-Dfile.encoding=UTF-8"]
+ :deps
+ {org.clojure/clojure {:mvn/version "1.11.1"}}
+ :aliases
+ {:dev
+  {:jvm-opts ["-ea"]
+   :extra-paths ["dev" "test"]
+   :extra-deps 
+   {org.clojure/tools.namespace {:mvn/version "1.4.4"}
+    lambdaisland/deep-diff2     {:mvn/version "2.10.211"}}}}}
