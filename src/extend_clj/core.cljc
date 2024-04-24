@@ -11,8 +11,7 @@
   
   (validate [this validator value])
   (notify-watches [this oldv newv])
-  (swap* [this f args])
-  )
+  (swap* [this f args]))
 
 #?(:clj
    (defn- cljs-env? [env]

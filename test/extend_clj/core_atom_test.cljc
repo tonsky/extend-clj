@@ -6,19 +6,22 @@
   #?(:clj
      (:import [clojure.lang ExceptionInfo])))
 
-(deftype-atom Cursor [*atom path]
+(deftype-atom Cursor [*atom path]  
   (deref-impl [this]
     (get-in @*atom path))
+
   (compare-and-set-impl [this oldv newv]
-    (compare-and-set!
-      *atom
-      (assoc-in @*atom path oldv)
-      (assoc-in @*atom path newv)))
+    (let [atom   @*atom
+          before (if (= oldv (get-in atom path))
+                   atom
+                   (assoc-in atom path oldv))
+          after  (assoc-in atom path newv)]
+      (compare-and-set! *atom before after)))
   
   #?@(:clj [clojure.lang.Counted
             (count [_] 7)]
-     :cljs [ICounted
-            (-count [_] 7)]))
+      :cljs [ICounted
+             (-count [_] 7)]))
 
 (deftest test-core
   (let [*atom   (atom {:x 1 :y 2})
@@ -67,6 +70,10 @@
       (is (= 2 @*cursor))
       (is (= false (compare-and-set! *cursor 1 3)))
       (is (= 2 @*cursor)))))
+
+(deftest ^{:doc "issue-1"} test-missing
+  (let [*cursor (->Cursor (atom {}) [:missing])]
+    (is (= [nil 1] (swap-vals! *cursor (fnil inc 0))))))
 
 (deftest test-lookup
   (let [*atom (atom {:x 1})
@@ -148,9 +155,9 @@
         (is (= 3 (swap! *cursor + 2)))
         
         #?(:clj
-            (is (thrown-with-msg? ExceptionInfo #"Invalid reference state" (set-validator! *cursor even?)))
+           (is (thrown-with-msg? ExceptionInfo #"Invalid reference state" (set-validator! *cursor even?)))
            :cljs
-            (is (thrown-with-msg? js/Error #"Validator rejected reference state" (set-validator! *cursor even?))))
+           (is (thrown-with-msg? js/Error #"Validator rejected reference state" (set-validator! *cursor even?))))
            
         (is (thrown-with-msg? ExceptionInfo #"Invalid reference state" (->Cursor *atom [:x] :validator even?)))))))
   

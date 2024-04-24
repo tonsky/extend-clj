@@ -6,16 +6,18 @@ Look no further! With `extend-clj` only need to implement the absolute semantic 
 
 ```
 (extend-clj.core/deftype-atom Cursor
-  [atom path]
+  [*atom path]
 
   (deref-impl [this]
-    (get-in @atom path))
+    (get-in @*atom path))
 
   (compare-and-set-impl [this oldv newv]
-    (compare-and-set!
-      atom
-      (assoc-in @atom path oldv)
-      (assoc-in @atom path newv)))
+    (let [atom   @*atom
+          before (if (= oldv (get-in atom path))
+                   atom
+                   (assoc-in atom path oldv))
+          after  (assoc-in atom path newv)]
+      (compare-and-set! *atom before after))))
 ```
 
 To construct new Cursor, use
